@@ -4,6 +4,8 @@ import os
 import requests
 import logging
 import time
+import urllib.parse
+
 load_dotenv()
 
 # Create a logger
@@ -71,27 +73,48 @@ def reply_to_tweet(tweet_id, reply_text):
 
 
 def nvctranslator(tweet_text):
-    logger.info('converting tweet into nvc language')
-    new_text = tweet_text
-    return new_text
+    """ Convert tweet text to nvc language """
+    if (len(tweet_text) > 0):
+        logger.info('Converting tweet text into nvc language')
+        try:
+
+            url = f"https://nvctranslator.com/translate?text={urllib.parse.quote(tweet_text)}"
+            response = requests.request(
+                "GET", url)
+        except Exception as e:
+            logging.error("Exception occurred in retrieveTweet")
+            logging.error(str(e))
+            return None
+        if (response.json()[1] == 200):
+            logger.info("Text succesfully translated")
+            translatedText = response.json()[0]['translation'].split('\n')[
+                1].split(': ')[1][1:-1]
+            return translatedText
+        else:
+            logger.error("unable to complete API get request")
+            return None
+    else:
+        logger.info("No text provided to translate")
+        return None
 
 
 if __name__ == "__main__":
-    WAIT_TIME = 2  # min
-    logger.info('Montioring tweets -Program started')
-    already_replied = 0
-    while 1:
-        logger.info("Listining for tweets")
-        time.sleep(WAIT_TIME*10)
-        tweets = get_tweets_with_hastag()
-        if (tweets):
-            logger.info("Found Tweets")
-            recent_tweets = tweets[:len(tweets)-already_replied]
-            for tweet in recent_tweets:
-                already_replied += 1
-                try:
-                    reply_to_tweet(str(tweet['tweet_id']), str(nvctranslator(f"Hello again {tweet['user']['name']}"
-                                                                             )))
-                    logger.info("Successfully replied")
-                except Exception as e:
-                    logger.error(e)
+    # WAIT_TIME = 2  # min
+    # logger.info('Montioring tweets -Program started')
+    # already_replied = 0
+    # while 1:
+    #     logger.info("Listining for tweets")
+    #     time.sleep(WAIT_TIME*10)
+    #     tweets = get_tweets_with_hastag()
+    #     if (tweets):
+    #         logger.info("Found Tweets")
+    #         recent_tweets = tweets[:len(tweets)-already_replied]
+    #         for tweet in recent_tweets:
+    #             already_replied += 1
+    #             try:
+    #                 reply_to_tweet(str(tweet['tweet_id']), str(f"Hello again {tweet['user']['name']}"
+    #                                                            ))
+    #                 logger.info("Successfully replied")
+    #             except Exception as e:
+    #                 logger.error(e)
+    print(nvctranslator("You never texted me"))
