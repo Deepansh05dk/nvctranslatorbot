@@ -1,12 +1,13 @@
 import sqlite3
 import tweepy
 from dotenv import load_dotenv
-import os
+import sys
+from os import environ
 import requests
 import logging
 import time
 import urllib.parse
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 
 load_dotenv()
@@ -20,11 +21,11 @@ logging.basicConfig(
     force=True)
 
 # Config details of twitter API
-BEARER_TOKEN = os.getenv("BEARER_TOKEN")
-API_KEY = os.getenv("CONSUMER_KEY")
-API_KEY_SECRET = os.getenv("CONSUMER_SECRET")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN_KEY")
-ACCESS_TOKEN_SECRET = os.getenv("ACCESS_TOKEN_SECRET")
+BEARER_TOKEN = environ["BEARER_TOKEN"]
+API_KEY = environ["CONSUMER_KEY"]
+API_KEY_SECRET = environ["CONSUMER_SECRET"]
+ACCESS_TOKEN = environ["ACCESS_TOKEN_KEY"]
+ACCESS_TOKEN_SECRET = environ["ACCESS_TOKEN_SECRET"]
 
 
 # Authenticate to Twitter
