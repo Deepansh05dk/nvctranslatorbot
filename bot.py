@@ -192,7 +192,7 @@ def main():
 
 
 if __name__ == "__main__":
-    WAIT_TIME = 2  # min
+    WAIT_TIME = 1  # min
     while 1:
         try:
             main()
