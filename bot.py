@@ -116,25 +116,30 @@ async def handle_each_tweet(semaphore, param, index):
                     (one_tweet for one_tweet in param['mentions']['includes']['tweets'] if one_tweet['id'] == in_reply_to_tweet_id), None)
                 if (in_reply_to_user_tweet_details):
                     in_reply_to_user_text = in_reply_to_user_tweet_details['text']
-                userdetails_to_reply = next(
-                    (user for user in param['mentions']['includes']['users'] if user['id'] == in_reply_to_user_id), None)
-                username_to_reply = None
-                if (userdetails_to_reply):
-                    username_to_reply = userdetails_to_reply['username']
                 userdetails_who_posted = next(
-                    (user for user in param['mentions']['includes']['users'] if user['id'] == tweet_author_id), None)
+                    (user for user in param['mentions']['includes']['users'] if user['id'] == in_reply_to_user_id), None)
                 username_who_posted = None
                 if (userdetails_who_posted):
                     username_who_posted = userdetails_who_posted['username']
+                userdetails_to_reply = next(
+                    (user for user in param['mentions']['includes']['users'] if user['id'] == tweet_author_id), None)
+                username_to_reply = None
+                if (userdetails_to_reply):
+                    username_to_reply = userdetails_to_reply['username']
+
+                if (username_who_posted == 'nvctranslator'):
+                    logger.warning("Can't reply back to nvctranslated tweet")
+                    return
 
                 # Your code to get translated text
                 translated_text = await nvctranslator(
                     tweet_text=str(in_reply_to_user_text.replace('\n\n', ' ')))
 
                 # Your code to reply to the tweet
-                if (username_who_posted == username_to_reply and translated_text == None and len(translated_text) == 0):
+                if (translated_text == None and len(translated_text) == 0):
+                    logger.warning("No text recieved from NVC API")
                     return
-                reply_text = f"Here is @{username_to_reply}’s message in a form of non-violent communication: {translated_text}"
+                reply_text = f"Here is @{username_who_posted}’s message in a form of non-violent communication: {translated_text}"
 
                 await reply_to_tweet(tweet_id=tweet_id, reply_text=str(reply_text.strip()))
 
@@ -172,7 +177,6 @@ async def twitter_bot():
             tasks = [asyncio.create_task(handle_each_tweet(
                 param={'tweet': tweet, 'mentions': mentions}, index=index, semaphore=semaphore)) for index, tweet in enumerate(mentions['data'])]
             await asyncio.gather(*tasks)
-            print("new time -", str(last_processed_time))
 
         else:
             logger.warning('No mentions found')
